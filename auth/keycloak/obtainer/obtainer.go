@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"linksmart.eu/lc/sec/auth/obtainer"
+	"code.linksmart.eu/com/go-sec/auth/obtainer"
 )
 
 const (

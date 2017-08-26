@@ -15,7 +15,7 @@ import (
 	"net/http"
 
 	jwt "github.com/dgrijalva/jwt-go"
-	"linksmart.eu/lc/sec/auth/validator"
+	"code.linksmart.eu/com/go-sec/auth/validator"
 )
 
 const DriverName = "keycloak"

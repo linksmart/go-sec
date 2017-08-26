@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"encoding/json"
-	_ "linksmart.eu/lc/sec/auth/cas/obtainer"
-	_ "linksmart.eu/lc/sec/auth/keycloak/obtainer"
-	"linksmart.eu/lc/sec/auth/obtainer"
+	_ "code.linksmart.eu/com/go-sec/auth/cas/obtainer"
+	_ "code.linksmart.eu/com/go-sec/auth/keycloak/obtainer"
+	"code.linksmart.eu/com/go-sec/auth/obtainer"
 )
 
 // Handler is a http.Handler that validates tickets and performs optional authorization

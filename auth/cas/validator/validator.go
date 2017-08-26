@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"linksmart.eu/lc/sec/auth/validator"
+	"code.linksmart.eu/com/go-sec/auth/validator"
 	"github.com/kylewolfe/simplexml"
 )
 

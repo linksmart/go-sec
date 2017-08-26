@@ -1,6 +1,6 @@
-### LinkSmart LocalConnect Core
-Code of the core components of LinkSmart LocalConnect
+# LinkSmart Go-Sec 
+Linksmart security packages for Go (Golang) services.
 
-See wiki on how to [get started](https://linksmart.eu/redmine/projects/linksmart-local-connect/wiki/Source_Code?parent=Wiki):
-
-
+For more information, refer to docs:
+* [Authentication](https://docs.linksmart.eu/display/LC/Authentication)
+* [Authorization](https://docs.linksmart.eu/display/LC/Authorization)
