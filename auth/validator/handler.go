@@ -4,12 +4,11 @@ package validator
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 
-	"encoding/json"
-	_ "code.linksmart.eu/com/go-sec/auth/cas/obtainer"
 	_ "code.linksmart.eu/com/go-sec/auth/keycloak/obtainer"
 	"code.linksmart.eu/com/go-sec/auth/obtainer"
 )
