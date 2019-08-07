@@ -1,3 +1,2 @@
-# gb build artefacts
 bin/
-pkg/
+/pkg/
