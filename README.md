@@ -2,13 +2,21 @@
 This repository includes security packages for LinkSmart Go services.
 
 It includes the following packages:
-* `github.com/linksmart/go-sec/auth` which provides interfaces to obtain and validate OpenID Connect tokens. It also provides an implementation for [Keycloak](https://github.com/keycloak/keycloak). 
-* `github.com/linksmart/go-sec/authz` which is a simple rule-based authorization that can be used to implement access control in services after authentication.
+### Auth
+[![GoDoc](https://godoc.org/github.com/linksmart/go-sec/auth?status.svg)](https://godoc.org/github.com/linksmart/go-sec/auth)  
+Auth consists of the following subpackages:
+* `github.com/linksmart/go-sec/auth/obtainer` interface to obtain OpenID Connect tokens
+* `github.com/linksmart/go-sec/auth/validator` interface to validate OpenID Connect tokens
+* `github.com/linksmart/go-sec/auth/keycloak` with two packages implementating obtainer and validator for Keycloak
+
+### Authz
+[![GoDoc](https://godoc.org/github.com/linksmart/go-sec/authz?status.svg)](https://godoc.org/github.com/linksmart/go-sec/authz)  
+Package `github.com/linksmart/go-sec/authz` is a simple rule-based authorization that can be used to implement access control in services after authentication.
 
 
-For more information, refer to docs:
-* [Authentication](https://docs.linksmart.eu/display/LC/Authentication)
-* [Authorization](https://docs.linksmart.eu/display/LC/Authorization)
+Documentation:
+* [Authentication](https://github.com/linksmart/go-sec/wiki/Authentication)
+* [Authorization](https://github.com/linksmart/go-sec/wiki/Authorization)
 
 ## Development
 The dependencies of this package are managed by [Go Modules](https://blog.golang.org/using-go-modules).
