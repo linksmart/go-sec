@@ -1,5 +1,6 @@
 // Copyright 2014-2016 Fraunhofer Institute for Applied Information Technology FIT
 
+// Package obtainer provides an interface for OpenID Connect token obtainment from a provider
 package obtainer
 
 import (

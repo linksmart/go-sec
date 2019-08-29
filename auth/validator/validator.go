@@ -1,5 +1,6 @@
 // Copyright 2014-2016 Fraunhofer Institute for Applied Information Technology FIT
 
+// Package validator provides an interface for OpenID Connect token validation
 package validator
 
 import (

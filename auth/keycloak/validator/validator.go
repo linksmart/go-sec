@@ -1,5 +1,6 @@
 // Copyright 2014-2016 Fraunhofer Institute for Applied Information Technology FIT
 
+// Package validator implements OpenID Connect token validation obtained from Keycloak
 package validator
 
 import (

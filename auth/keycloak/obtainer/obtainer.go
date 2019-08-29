@@ -1,5 +1,6 @@
 // Copyright 2014-2016 Fraunhofer Institute for Applied Information Technology FIT
 
+// Package obtainer implements OpenID Connect token obtainment from Keycloak
 package obtainer
 
 import (
