@@ -9,13 +9,15 @@ Auth consists of the following subpackages:
 * `github.com/linksmart/go-sec/auth/validator` interface to validate OpenID Connect tokens
 * `github.com/linksmart/go-sec/auth/keycloak` with two packages implementating obtainer and validator for Keycloak
 
+Documentation:
+* [Authentication](https://github.com/linksmart/go-sec/wiki/Authentication)
+
 ### Authz
 [![GoDoc](https://godoc.org/github.com/linksmart/go-sec/authz?status.svg)](https://godoc.org/github.com/linksmart/go-sec/authz)  
 Package `github.com/linksmart/go-sec/authz` is a simple rule-based authorization that can be used to implement access control in services after authentication.
 
 
 Documentation:
-* [Authentication](https://github.com/linksmart/go-sec/wiki/Authentication)
 * [Authorization](https://github.com/linksmart/go-sec/wiki/Authorization)
 
 ## Development
