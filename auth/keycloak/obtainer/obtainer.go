@@ -26,6 +26,7 @@ const (
 
 type KeycloakObtainer struct{}
 
+// TODO remove internal logging
 var logger *log.Logger
 
 func init() {

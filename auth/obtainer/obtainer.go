@@ -5,9 +5,6 @@ package obtainer
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"strconv"
 	"sync"
 )
 
@@ -24,7 +21,6 @@ type Driver interface {
 var (
 	driversMu sync.Mutex
 	drivers   = make(map[string]Driver)
-	logger    *log.Logger
 )
 
 // Register registers a driver (called by a the driver package)
@@ -43,14 +39,7 @@ func Setup(name, serverAddr string) (*Obtainer, error) {
 	driveri, ok := drivers[name]
 	driversMu.Unlock()
 	if !ok {
-		return nil, fmt.Errorf("unknown obtainer %s (forgot to import driver?)", name)
-	}
-
-	// Initialize the logger
-	logger = log.New(os.Stdout, fmt.Sprintf("[%s] ", name), 0)
-	v, err := strconv.Atoi(os.Getenv("DEBUG"))
-	if err == nil && v == 1 {
-		logger.SetFlags(log.Ltime | log.Lshortfile)
+		return nil, fmt.Errorf("unknown obtainer: '%s' (forgot to import driver?)", name)
 	}
 
 	return &Obtainer{

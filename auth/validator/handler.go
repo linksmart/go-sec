@@ -154,18 +154,11 @@ func (v *Validator) basicAuth(credentials string) (string, int, error) {
 }
 
 // errorResponse writes error to HTTP ResponseWriter
-func errorResponse(w http.ResponseWriter, code int, msgs ...string) {
-	msg := strings.Join(msgs, " ")
-	e := map[string]interface{}{
+func errorResponse(w http.ResponseWriter, code int, msgs ...interface{}) {
+	b, _ := json.Marshal(map[string]interface{}{
 		"code":    code,
-		"message": msg,
-	}
-	if code >= 500 {
-		logger.Printf("ERROR %s: %s", http.StatusText(code), msg)
-	} else {
-		logger.Printf("%s: %s", http.StatusText(code), msg)
-	}
-	b, _ := json.Marshal(e)
+		"message": fmt.Sprint(msgs...),
+	})
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(b)

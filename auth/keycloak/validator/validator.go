@@ -9,10 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
-	"os"
-	"strconv"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/linksmart/go-sec/auth/validator"
@@ -22,19 +19,10 @@ const DriverName = "keycloak"
 
 type KeycloakValidator struct{}
 
-var (
-	logger    *log.Logger
-	publicKey *rsa.PublicKey
-)
+// TODO add as a field to KeycloakValidator?
+var publicKey *rsa.PublicKey
 
 func init() {
-	// Initialize the logger
-	logger = log.New(os.Stdout, fmt.Sprintf("[%s] ", DriverName), 0)
-	v, err := strconv.Atoi(os.Getenv("DEBUG"))
-	if err == nil && v == 1 {
-		logger.SetFlags(log.Ltime | log.Lshortfile)
-	}
-
 	// Register the driver as a auth/validator
 	validator.Register(DriverName, &KeycloakValidator{})
 }
