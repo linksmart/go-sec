@@ -7,7 +7,7 @@ import (
 	"github.com/linksmart/go-sec/authz"
 )
 
-// Conf is a reference Ticket Validator configuration struct
+// Conf is a reference configuration struct for Validator
 type Conf struct {
 	// Enabled toggles validator client
 	Enabled bool `json:"enabled"`
@@ -23,7 +23,6 @@ type Conf struct {
 	Authz authz.Conf `json:"authorization"`
 }
 
-// Deprecated:
 // Validate validates the configuration object
 func (c Conf) Validate() error {
 

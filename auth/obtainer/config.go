@@ -5,7 +5,7 @@ import (
 	"net/url"
 )
 
-// Conf is a reference Ticket Obtainer configuration struct
+// Conf is a reference configuration struct for Obtainer
 type Conf struct {
 	// Enabled is to toggle obtainer client
 	Enabled bool `json:"enabled"`
