@@ -8,11 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
-	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -26,17 +23,7 @@ const (
 
 type KeycloakObtainer struct{}
 
-// TODO remove internal logging
-var logger *log.Logger
-
 func init() {
-	// Initialize the logger
-	logger = log.New(os.Stdout, fmt.Sprintf("[%s] ", DriverName), 0)
-	v, err := strconv.Atoi(os.Getenv("DEBUG"))
-	if err == nil && v == 1 {
-		logger.SetFlags(log.Ltime | log.Lshortfile)
-	}
-
 	// Register the driver as a auth/obtainer
 	obtainer.Register(DriverName, &KeycloakObtainer{})
 }
@@ -60,7 +47,6 @@ func (o *KeycloakObtainer) Login(serverAddr, username, password, clientID string
 		return "", err
 	}
 	defer res.Body.Close()
-	logger.Println("Login()", res.Status)
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -99,7 +85,6 @@ func (o *KeycloakObtainer) RequestTicket(serverAddr, sToken, clientID string) (s
 	json.Unmarshal(decoded, &idToken)
 	// if id_token is still valid, no need to request a new one
 	if int64(idToken["exp"].(float64)) > time.Now().Unix() {
-		logger.Println("RequestTicket() Using the newly acquired token.")
 		return token.IdToken, nil
 	}
 
@@ -113,7 +98,6 @@ func (o *KeycloakObtainer) RequestTicket(serverAddr, sToken, clientID string) (s
 		return "", err
 	}
 	defer res.Body.Close()
-	logger.Println("RequestTicket()", res.Status)
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
