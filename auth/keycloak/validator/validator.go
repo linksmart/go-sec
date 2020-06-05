@@ -78,22 +78,22 @@ func (v *KeycloakValidator) Validate(serverAddr, clientID, tokenString string) (
 		return v.publicKey, nil
 	})
 	if err != nil {
-		return false, &validator.UserProfile{Status: fmt.Sprintf("error parsing jwt token: %s", err)}, nil
-	}
-
-	// Check the validation errors
-	if !token.Valid {
-		if ve, ok := err.(*jwt.ValidationError); ok {
-			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-				return false, &validator.UserProfile{Status: fmt.Sprintf("Invalid token.")}, nil
-			} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-				return false, &validator.UserProfile{Status: fmt.Sprintf("Token is either expired or not active yet")}, nil
+		// Check the validation errors
+		if !token.Valid {
+			if ve, ok := err.(*jwt.ValidationError); ok {
+				if ve.Errors&jwt.ValidationErrorMalformed != 0 {
+					return false, &validator.UserProfile{Status: fmt.Sprintf("Invalid token.")}, nil
+				} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
+					return false, &validator.UserProfile{Status: fmt.Sprintf("Token is either expired or not active yet")}, nil
+				} else {
+					return false, &validator.UserProfile{Status: fmt.Sprintf("Error validating the token: %s", err)}, nil
+				}
 			} else {
-				return false, &validator.UserProfile{Status: fmt.Sprintf("Error validating the token: %s", err)}, nil
+				return false, &validator.UserProfile{Status: fmt.Sprintf("Invalid token: %s", err)}, nil
 			}
-		} else {
-			return false, &validator.UserProfile{Status: fmt.Sprintf("Invalid token: %s", err)}, nil
 		}
+
+		return false, &validator.UserProfile{Status: fmt.Sprintf("error parsing jwt token: %s", err)}, nil
 	}
 
 	// Validate the claims and get user data
