@@ -30,36 +30,10 @@ func init() {
 func (v *KeycloakValidator) Validate(serverAddr, clientID, tokenString string) (bool, *validator.UserProfile, error) {
 
 	if v.publicKey == nil {
-		// Get the public key
-		res, err := http.Get(serverAddr)
+		var err error
+		v.publicKey, err = queryPublicKey(serverAddr)
 		if err != nil {
-			return false, nil, fmt.Errorf("error getting the public key from the authentication server: %s", err)
-		}
-		defer res.Body.Close()
-
-		var body struct {
-			PublicKey string `json:"public_key"`
-		}
-		err = json.NewDecoder(res.Body).Decode(&body)
-		if err != nil {
-			return false, nil, fmt.Errorf("error getting the public key from the authentication server response: %s", err)
-		}
-
-		// Decode the public key
-		decoded, err := base64.StdEncoding.DecodeString(body.PublicKey)
-		if err != nil {
-			return false, nil, fmt.Errorf("error decoding the authentication server public key: %s", err)
-		}
-
-		// Parse the public key
-		parsed, err := x509.ParsePKIXPublicKey(decoded)
-		if err != nil {
-			return false, nil, fmt.Errorf("error pasring the authentication server public key: %s", err)
-		}
-
-		var ok bool
-		if v.publicKey, ok = parsed.(*rsa.PublicKey); !ok {
-			return false, nil, fmt.Errorf("the authentication server's public key type is not RSA")
+			return false, nil, fmt.Errorf("error querying public key: %s", err)
 		}
 	}
 
@@ -79,39 +53,78 @@ func (v *KeycloakValidator) Validate(serverAddr, clientID, tokenString string) (
 	})
 	if err != nil {
 		// Check the validation errors
-		if !token.Valid {
+		if token != nil && !token.Valid {
 			if ve, ok := err.(*jwt.ValidationError); ok {
 				if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-					return false, &validator.UserProfile{Status: fmt.Sprintf("Invalid token.")}, nil
+					return false, &validator.UserProfile{Status: fmt.Sprintf("invalid token.")}, nil
 				} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-					return false, &validator.UserProfile{Status: fmt.Sprintf("Token is either expired or not active yet")}, nil
+					return false, &validator.UserProfile{Status: fmt.Sprintf("token is either expired or not active yet")}, nil
 				} else {
-					return false, &validator.UserProfile{Status: fmt.Sprintf("Error validating the token: %s", err)}, nil
+					return false, &validator.UserProfile{Status: fmt.Sprintf("error validating the token: %s", err)}, nil
 				}
 			} else {
-				return false, &validator.UserProfile{Status: fmt.Sprintf("Invalid token: %s", err)}, nil
+				return false, &validator.UserProfile{Status: fmt.Sprintf("invalid token: %s", err)}, nil
 			}
 		}
 
 		return false, &validator.UserProfile{Status: fmt.Sprintf("error parsing jwt token: %s", err)}, nil
 	}
 
-	// Validate the claims and get user data
-	if claims, ok := token.Claims.(*expectedClaims); ok {
-		if claims.Type != "ID" {
-			return false, &validator.UserProfile{Status: fmt.Sprintf("Wrong token type `%s` for accessing resource. Expecting type `ID`.", claims.Type)}, nil
-		}
-		if claims.Audience != clientID {
-			return false, &validator.UserProfile{Status: fmt.Sprintf("The token is issued for another client: %s", claims.Audience)}, nil
-		}
-		if claims.Issuer != serverAddr {
-			return false, &validator.UserProfile{Status: fmt.Sprintf("The token is issued by another provider: %s", claims.Issuer)}, nil
-		}
-
-		var profile validator.UserProfile
-		profile.Username = claims.PreferredUsername
-		profile.Groups = claims.Groups
-		return true, &profile, nil
+	// Validate the other claims
+	claims, ok := token.Claims.(*expectedClaims)
+	if !ok {
+		return false, nil, fmt.Errorf("unable to extract claims from the jwt id_token")
 	}
-	return false, nil, fmt.Errorf("unable to extract claims from the jwt id_token")
+	if claims.Type != "ID" {
+		return false, &validator.UserProfile{Status: fmt.Sprintf("unexpected token type: %s. Expected type `ID` (id_token)", claims.Type)}, nil
+	}
+	if claims.Audience != clientID {
+		return false, &validator.UserProfile{Status: fmt.Sprintf("token is issued for another client: %s", claims.Audience)}, nil
+	}
+	if claims.Issuer != serverAddr {
+		return false, &validator.UserProfile{Status: fmt.Sprintf("token is issued by another provider: %s", claims.Issuer)}, nil
+	}
+
+	// return user profile from claims
+	return true, &validator.UserProfile{
+		Username: claims.PreferredUsername,
+		Groups:   claims.Groups,
+	}, nil
+
+}
+
+func queryPublicKey(serverAddr string) (*rsa.PublicKey, error) {
+
+	res, err := http.Get(serverAddr)
+	if err != nil {
+		return nil, fmt.Errorf("error getting the public key from the authentication server: %s", err)
+	}
+	defer res.Body.Close()
+
+	var body struct {
+		PublicKey string `json:"public_key"`
+	}
+	err = json.NewDecoder(res.Body).Decode(&body)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding the public key from the authentication server response: %s", err)
+	}
+
+	// Decode the public key
+	decoded, err := base64.StdEncoding.DecodeString(body.PublicKey)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding the authentication server public key: %s", err)
+	}
+
+	// Parse the public key
+	parsed, err := x509.ParsePKIXPublicKey(decoded)
+	if err != nil {
+		return nil, fmt.Errorf("error pasring the authentication server public key: %s", err)
+	}
+
+	publicKey, ok := parsed.(*rsa.PublicKey)
+	if !ok {
+		return nil, fmt.Errorf("the authentication server's public key type is not RSA")
+	}
+
+	return publicKey, nil
 }
