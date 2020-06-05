@@ -4,14 +4,11 @@
 package obtainer
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strings"
-	"time"
 
 	"github.com/linksmart/go-sec/auth/obtainer"
 )
@@ -81,29 +78,6 @@ func (o *KeycloakObtainer) RenewToken(serverAddr string, oldToken interface{}, c
 	token, ok := oldToken.(Token)
 	if !ok {
 		return nil, fmt.Errorf("invalid input token: assertion error")
-	}
-
-	parts := strings.Split(token.IdToken, ".")
-	if len(parts) != 3 {
-		return "", fmt.Errorf("malformed jwt id_token")
-	}
-
-	// decode the payload of the id_token given in input
-	decoded, err := base64.RawStdEncoding.DecodeString(parts[1])
-	if err != nil {
-		return "", fmt.Errorf("error decoding the id_token: %s", err)
-	}
-
-	var claims struct {
-		Expiry int64 `json:"exp"`
-	}
-	err = json.Unmarshal(decoded, &claims)
-	if err != nil {
-		return "", fmt.Errorf("error decoding the id_token: %s", err)
-	}
-	// if id_token is still valid, no need to request a new one
-	if claims.Expiry > time.Now().Unix() {
-		return token.IdToken, nil
 	}
 
 	// get a new token using the refresh_token
