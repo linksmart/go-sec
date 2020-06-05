@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	TicketPath = "/protocol/openid-connect/token"
-	DriverName = "keycloak"
+	TokenEndpoint = "/protocol/openid-connect/token"
+	DriverName    = "keycloak"
 )
 
 type KeycloakObtainer struct{}
@@ -33,10 +33,12 @@ type Token struct {
 	IdToken      string `json:"id_token"`
 }
 
-// Login queries and returns the token object
-func (o *KeycloakObtainer) Login(serverAddr, username, password, clientID string) (string, error) {
+// ObtainToken requests a token in exchange for user credentials.
+// This follows the OAuth 2.0 Resource Owner Password Credentials Grant.
+// For this flow, the client in Keycloak must have Direct Grant enabled.
+func (o *KeycloakObtainer) ObtainToken(serverAddr, username, password, clientID string) (token interface{}, err error) {
 
-	res, err := http.PostForm(serverAddr+TicketPath, url.Values{
+	res, err := http.PostForm(serverAddr+TokenEndpoint, url.Values{
 		"grant_type": {"password"},
 		"client_id":  {clientID},
 		"username":   {username},
@@ -44,52 +46,68 @@ func (o *KeycloakObtainer) Login(serverAddr, username, password, clientID string
 		"scope":      {"openid"},
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if res.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("unable to login with username `%s`: %s", username, string(body))
+		return nil, fmt.Errorf("unable to login with username `%s`: %s", username, string(body))
 	}
 
-	var token Token
-	err = json.Unmarshal(body, &token)
+	var keycloakToken Token
+	err = json.Unmarshal(body, &keycloakToken)
 	if err != nil {
-		return "", fmt.Errorf("error getting the token: %s", err)
-	}
-	if len(strings.Split(token.RefreshToken, ".")) != 3 {
-		return "", fmt.Errorf("invalid format for refresh_token")
+		return nil, fmt.Errorf("error getting the token: %s", err)
 	}
 
-	serialized, _ := json.Marshal(&token)
-	return string(serialized), nil
+	return keycloakToken, nil
 }
 
-// RequestTicket returns the id_token
-//  acquired either from the token object given in the parameter sToken or by requesting it from the server
-func (o *KeycloakObtainer) RequestTicket(serverAddr, sToken, clientID string) (string, error) {
-	// deserialize the token
-	var token Token
-	json.Unmarshal([]byte(sToken), &token)
+// TokenString returns the ID Token part of token object
+func (o *KeycloakObtainer) TokenString(token interface{}) (tokenString string, err error) {
+	if token, ok := token.(Token); ok {
+		return token.IdToken, nil
+	}
+	return "", fmt.Errorf("invalid input token: assertion error")
+}
 
-	// decode the id_token acquired on Login()
-	decoded, err := base64.RawStdEncoding.DecodeString(strings.Split(token.IdToken, ".")[1])
+// RenewToken returns the token
+//  acquired either from the token object or by requesting a new one using refresh token
+func (o *KeycloakObtainer) RenewToken(serverAddr string, oldToken interface{}, clientID string) (newToken interface{}, err error) {
+	token, ok := oldToken.(Token)
+	if !ok {
+		return nil, fmt.Errorf("invalid input token: assertion error")
+	}
+
+	parts := strings.Split(token.IdToken, ".")
+	if len(parts) != 3 {
+		return "", fmt.Errorf("malformed jwt id_token")
+	}
+
+	// decode the payload of the id_token given in input
+	decoded, err := base64.RawStdEncoding.DecodeString(parts[1])
 	if err != nil {
 		return "", fmt.Errorf("error decoding the id_token: %s", err)
 	}
-	var idToken map[string]interface{}
-	json.Unmarshal(decoded, &idToken)
+
+	var claims struct {
+		Expiry int64 `json:"exp"`
+	}
+	err = json.Unmarshal(decoded, &claims)
+	if err != nil {
+		return "", fmt.Errorf("error decoding the id_token: %s", err)
+	}
 	// if id_token is still valid, no need to request a new one
-	if int64(idToken["exp"].(float64)) > time.Now().Unix() {
+	if claims.Expiry > time.Now().Unix() {
 		return token.IdToken, nil
 	}
 
-	// get a new id_token using the refresh_token
-	res, err := http.PostForm(serverAddr+TicketPath, url.Values{
+	// get a new token using the refresh_token
+	res, err := http.PostForm(serverAddr+TokenEndpoint, url.Values{
 		"grant_type":    {"refresh_token"},
 		"client_id":     {clientID},
 		"refresh_token": {token.RefreshToken},
@@ -107,15 +125,17 @@ func (o *KeycloakObtainer) RequestTicket(serverAddr, sToken, clientID string) (s
 		return "", fmt.Errorf("error getting a new token: %s", string(body))
 	}
 
-	err = json.Unmarshal(body, &token)
+	var keycloakToken Token
+	err = json.Unmarshal(body, &keycloakToken)
 	if err != nil {
-		return "", fmt.Errorf("error parsing the new token: %s", err)
+		return "", fmt.Errorf("error decoding the new token: %s", err)
 	}
 
-	return token.IdToken, nil
+	return keycloakToken, nil
 }
 
 // Logout expires the ticket (Not applicable in the current flow)
-func (o *KeycloakObtainer) Logout(_, _ string) error {
+func (o *KeycloakObtainer) RevokeToken(serverAddr string, token interface{}) error {
+	// TODO https://www.keycloak.org/docs/latest/securing_apps/#_token_revocation_endpoint
 	return nil
 }

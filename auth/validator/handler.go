@@ -86,9 +86,9 @@ func (v *Validator) Handler(next http.Handler) http.Handler {
 }
 
 // validationChain validates a token and performs authorization
-func (v *Validator) validationChain(token, path, method string) (int, error) {
+func (v *Validator) validationChain(tokenString string, path, method string) (int, error) {
 	// Validate Token
-	valid, profile, err := v.driver.Validate(v.serverAddr, v.clientID, token)
+	valid, profile, err := v.driver.Validate(v.serverAddr, v.clientID, tokenString)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("Authentication server error: %s", err)
 	}
@@ -99,7 +99,7 @@ func (v *Validator) validationChain(token, path, method string) (int, error) {
 		return http.StatusUnauthorized, fmt.Errorf("Unauthorized request")
 	}
 	// Check for optional authorization
-	if v.authz != nil {
+	if v.authz.Enabled {
 		if ok := v.authz.Authorized(path, method, profile.Username, profile.Groups); !ok {
 			return http.StatusForbidden, fmt.Errorf("Access denied for user `%s` member of %s", profile.Username, profile.Groups)
 		}
@@ -135,22 +135,22 @@ func (v *Validator) basicAuth(credentials string) (string, int, error) {
 		clients[credentials] = client
 	}
 
-	token, err := client.Obtain()
+	tokenString, err := client.Obtain()
 	if err != nil {
 		return "", http.StatusUnauthorized, fmt.Errorf("Basic Auth: Unable to obtain ticket: %s", err)
 	}
 
-	valid, _, err := v.driver.Validate(v.serverAddr, v.clientID, token)
+	valid, _, err := v.driver.Validate(v.serverAddr, v.clientID, tokenString)
 	if err != nil {
 		return "", http.StatusInternalServerError, fmt.Errorf("Basic Auth: Validation error: %s", err)
 	}
 	if !valid {
-		token, err = client.Renew()
+		tokenString, err = client.Renew()
 		if err != nil {
 			return "", http.StatusUnauthorized, fmt.Errorf("Basic Auth: Unable to renew ticket: %s", err)
 		}
 	}
-	return token, http.StatusOK, nil
+	return tokenString, http.StatusOK, nil
 }
 
 // errorResponse writes error to HTTP ResponseWriter
