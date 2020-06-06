@@ -12,12 +12,11 @@ func (authz *Conf) Authorized(resource, method, user string, groups []string) bo
 	// Create a tree of paths
 	// e.g. /path1/path2/path3 -> [/path1/path2/path3 /path1/path2 /path1]
 	// e.g. / -> [/]
-	resourceSplit := strings.Split(resource, "/")
-	resourceSplit = resourceSplit[1:] // truncate the first slash
+	resourceSplit := strings.Split(resource, "/")[1:] // split and drop the first part (empty string before slash)
 	resourceTree := make([]string, 0, len(resourceSplit))
 	// construct tree from longest to shortest (/path1) path
 	for i := len(resourceSplit); i >= 1; i-- {
-		resourceTree = append(resourceTree, "/"+strings.Join(resourceSplit[0:i], "/"))
+		resourceTree = append(resourceTree, "/"+strings.Join(resourceSplit[:i], "/"))
 	}
 	//fmt.Printf("%s -> %v -> %v\n", resource, resourceSplit, resourceTree)
 
