@@ -53,7 +53,7 @@ func (o *KeycloakObtainer) ObtainToken(serverAddr, username, password, clientID 
 		return nil, err
 	}
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error getting a token: %s", stringifyError(body))
+		return nil, fmt.Errorf("error getting a token: %s", stringifyError(res.StatusCode, body))
 	}
 
 	var keycloakToken Token
@@ -97,7 +97,7 @@ func (o *KeycloakObtainer) RenewToken(serverAddr string, oldToken interface{}, c
 		return nil, err
 	}
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error getting a new token: %s", stringifyError(body))
+		return nil, fmt.Errorf("error getting a new token: %s", stringifyError(res.StatusCode, body))
 	}
 
 	var keycloakToken Token
@@ -115,7 +115,10 @@ func (o *KeycloakObtainer) RevokeToken(serverAddr string, token interface{}) err
 	return nil
 }
 
-func stringifyError(body []byte) string {
+func stringifyError(status int, body []byte) string {
+	if len(body) == 0 {
+		return fmt.Sprintf("%d %s", status, http.StatusText(status))
+	}
 	var m map[string]interface{}
 	err := json.Unmarshal(body, &m)
 	if err != nil { // error is not json
