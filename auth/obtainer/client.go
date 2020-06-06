@@ -36,10 +36,11 @@ func (c *Client) Obtain() (tokenString string, err error) {
 	defer c.Unlock()
 
 	if c.token == nil {
-		c.token, err = c.obtainer.ObtainToken(c.username, c.password, c.clientID)
+		token, err := c.obtainer.ObtainToken(c.username, c.password, c.clientID)
 		if err != nil {
 			return "", err
 		}
+		c.token = token
 	}
 	return c.obtainer.TokenString(c.token)
 }
@@ -49,11 +50,13 @@ func (c *Client) Renew() (tokenString string, err error) {
 	c.Lock()
 	defer c.Unlock()
 
-	c.token, err = c.obtainer.RenewToken(c.token, c.clientID)
+	token, err := c.obtainer.RenewToken(c.token, c.clientID)
 	if err != nil {
 		// could not renew, try to obtain a new one
 		return c.Obtain()
 	}
+	c.token = token
+
 	return c.obtainer.TokenString(c.token)
 }
 
