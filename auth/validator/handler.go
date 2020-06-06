@@ -59,7 +59,7 @@ func (v *Validator) Handler(next http.Handler) http.Handler {
 			}
 
 		default:
-			errorResponse(w, http.StatusUnauthorized, "unsupported Authorization method:", method)
+			errorResponse(w, http.StatusUnauthorized, "unsupported Authorization method: "+method)
 			return
 		}
 
@@ -139,10 +139,10 @@ func (v *Validator) basicAuth(credentials string) (string, int, error) {
 }
 
 // errorResponse writes error to HTTP ResponseWriter
-func errorResponse(w http.ResponseWriter, code int, msgs ...interface{}) {
+func errorResponse(w http.ResponseWriter, code int, message string) {
 	b, _ := json.Marshal(map[string]interface{}{
 		"code":    code,
-		"message": fmt.Sprint(msgs...),
+		"message": message,
 	})
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
