@@ -4,7 +4,6 @@
 package authz
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -20,7 +19,7 @@ func (authz *Conf) Authorized(resource, method, user string, groups []string) bo
 	for i := len(resourceSplit); i >= 1; i-- {
 		resourceTree = append(resourceTree, "/"+strings.Join(resourceSplit[0:i], "/"))
 	}
-	fmt.Printf("%s -> %v -> %v\n", resource, resourceSplit, resourceTree)
+	//fmt.Printf("%s -> %v -> %v\n", resource, resourceSplit, resourceTree)
 
 	for _, rule := range authz.Rules {
 		for _, res := range resourceTree {

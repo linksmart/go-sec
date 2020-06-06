@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/linksmart/go-sec/auth/obtainer"
 )
@@ -52,13 +53,13 @@ func (o *KeycloakObtainer) ObtainToken(serverAddr, username, password, clientID 
 		return nil, err
 	}
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unable to login with username `%s`: %s", username, string(body))
+		return nil, fmt.Errorf("error getting a token: %s", stringifyError(body))
 	}
 
 	var keycloakToken Token
 	err = json.Unmarshal(body, &keycloakToken)
 	if err != nil {
-		return nil, fmt.Errorf("error getting the token: %s", err)
+		return nil, fmt.Errorf("error decoding the token: %s", err)
 	}
 
 	return keycloakToken, nil
@@ -87,22 +88,22 @@ func (o *KeycloakObtainer) RenewToken(serverAddr string, oldToken interface{}, c
 		"refresh_token": {token.RefreshToken},
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if res.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("error getting a new token: %s", string(body))
+		return nil, fmt.Errorf("error getting a new token: %s", stringifyError(body))
 	}
 
 	var keycloakToken Token
 	err = json.Unmarshal(body, &keycloakToken)
 	if err != nil {
-		return "", fmt.Errorf("error decoding the new token: %s", err)
+		return nil, fmt.Errorf("error decoding the new token: %s", err)
 	}
 
 	return keycloakToken, nil
@@ -112,4 +113,28 @@ func (o *KeycloakObtainer) RenewToken(serverAddr string, oldToken interface{}, c
 func (o *KeycloakObtainer) RevokeToken(serverAddr string, token interface{}) error {
 	// TODO https://www.keycloak.org/docs/latest/securing_apps/#_token_revocation_endpoint
 	return nil
+}
+
+func stringifyError(body []byte) string {
+	var m map[string]interface{}
+	err := json.Unmarshal(body, &m)
+	if err != nil { // error is not json
+		return string(body)
+	}
+	var str []string
+	// error
+	if _, ok := m["error"]; ok {
+		str = append(str, fmt.Sprint(m["error"]))
+		delete(m, "error")
+	}
+	// error_description
+	if _, ok := m["error_description"]; ok {
+		str = append(str, fmt.Sprint(m["error_description"]))
+		delete(m, "error_description")
+	}
+	// others
+	for k, v := range m {
+		str = append(str, fmt.Sprintf("%s (%v)", k, v))
+	}
+	return strings.Join(str, ": ")
 }

@@ -47,7 +47,7 @@ func (v *KeycloakValidator) Validate(serverAddr, clientID, tokenString string) (
 	token, err := jwt.ParseWithClaims(tokenString, &expectedClaims{}, func(token *jwt.Token) (interface{}, error) {
 		// Make sure that the algorithm is RS256
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("unable to validate authentication token. Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unable to validate authentication token: unexpected signing method: %v", token.Header["alg"])
 		}
 		return v.publicKey, nil
 	})
@@ -76,7 +76,7 @@ func (v *KeycloakValidator) Validate(serverAddr, clientID, tokenString string) (
 		return false, nil, fmt.Errorf("unable to extract claims from the jwt id_token")
 	}
 	if claims.Type != "ID" {
-		return false, &validator.UserProfile{Status: fmt.Sprintf("unexpected token type: %s. Expected type `ID` (id_token)", claims.Type)}, nil
+		return false, &validator.UserProfile{Status: fmt.Sprintf("unexpected token type: %s, expected `ID` (id_token)", claims.Type)}, nil
 	}
 	if claims.Audience != clientID {
 		return false, &validator.UserProfile{Status: fmt.Sprintf("token is issued for another client: %s", claims.Audience)}, nil
@@ -118,7 +118,7 @@ func queryPublicKey(serverAddr string) (*rsa.PublicKey, error) {
 	// Parse the public key
 	parsed, err := x509.ParsePKIXPublicKey(decoded)
 	if err != nil {
-		return nil, fmt.Errorf("error pasring the authentication server public key: %s", err)
+		return nil, fmt.Errorf("error parsing the authentication server public key: %s", err)
 	}
 
 	publicKey, ok := parsed.(*rsa.PublicKey)
