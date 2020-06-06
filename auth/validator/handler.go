@@ -17,20 +17,6 @@ import (
 func (v *Validator) Handler(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 
-		// X-Auth-Token header
-		// DEPRECATED: Use Authorization field instead.
-		token := r.Header.Get("X-Auth-Token")
-		if token != "" {
-			statuscode, err := v.validationChain(token, r.URL.Path, r.Method)
-			if err != nil {
-				errorResponse(w, statuscode, err.Error())
-				return
-			}
-			// Successful validation, proceed to the next handler
-			next.ServeHTTP(w, r)
-			return
-		}
-
 		// Authorization header
 		Authorization := r.Header.Get("Authorization")
 		if Authorization == "" {
