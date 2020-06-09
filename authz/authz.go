@@ -7,8 +7,14 @@ import (
 	"strings"
 )
 
+// GroupAnonymous is the group name for unauthenticated users
+const GroupAnonymous = "anonymous"
+
 // Authorized checks whether a user/group is authorized to access a resource using the specific method
-func (authz *Conf) Authorized(resource, method, user string, groups []string) bool {
+func (authz *Conf) Authorized(resource, method string, claims *Claims) bool {
+	if claims == nil {
+		claims = &Claims{Groups: []string{GroupAnonymous}}
+	}
 	// Create a tree of paths
 	// e.g. /path1/path2/path3 -> [/path1/path2/path3 /path1/path2 /path1]
 	// e.g. / -> [/]
@@ -25,7 +31,7 @@ func (authz *Conf) Authorized(resource, method, user string, groups []string) bo
 			// Return true if user or group matches a rule
 			if inSlice(res, rule.Resources) &&
 				inSlice(method, rule.Methods) &&
-				(inSlice(user, rule.Users) || hasIntersection(groups, rule.Groups)) {
+				(inSlice(claims.Username, rule.Users) || hasIntersection(claims.Groups, rule.Groups) || inSlice(claims.ClientID, rule.Clients)) {
 				return true
 			}
 		}

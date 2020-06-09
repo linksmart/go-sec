@@ -21,7 +21,7 @@ func (v *Validator) Handler(next http.Handler) http.Handler {
 		Authorization := r.Header.Get("Authorization")
 		if Authorization == "" {
 			if v.authz != nil {
-				if ok := v.authz.Authorized(r.URL.Path, r.Method, "", []string{"anonymous"}); ok {
+				if ok := v.authz.Authorized(r.URL.Path, r.Method, nil); ok {
 					// Anonymous access, proceed to the next handler
 					next.ServeHTTP(w, r)
 					return
@@ -73,20 +73,20 @@ func (v *Validator) Handler(next http.Handler) http.Handler {
 // validationChain validates a token and performs authorization
 func (v *Validator) validationChain(tokenString string, path, method string) (int, error) {
 	// Validate Token
-	valid, profile, err := v.driver.Validate(v.serverAddr, v.clientID, tokenString)
+	valid, claims, err := v.driver.Validate(v.serverAddr, v.clientID, tokenString)
 	if err != nil {
 		return http.StatusInternalServerError, fmt.Errorf("validation error: %s", err)
 	}
 	if !valid {
-		if profile != nil && profile.Status != "" {
-			return http.StatusUnauthorized, fmt.Errorf("unauthorized request: %s", profile.Status)
+		if claims != nil && claims.Status != "" {
+			return http.StatusUnauthorized, fmt.Errorf("unauthorized request: %s", claims.Status)
 		}
 		return http.StatusUnauthorized, fmt.Errorf("unauthorized request")
 	}
 	// Check for optional authorization
 	if v.authz.Enabled {
-		if ok := v.authz.Authorized(path, method, profile.Username, profile.Groups); !ok {
-			return http.StatusForbidden, fmt.Errorf("access denied for user: %s, group membership: %v", profile.Username, profile.Groups)
+		if ok := v.authz.Authorized(path, method, claims); !ok {
+			return http.StatusForbidden, fmt.Errorf("access forbidden")
 		}
 	}
 	return http.StatusOK, nil
