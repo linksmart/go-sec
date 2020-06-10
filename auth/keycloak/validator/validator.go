@@ -80,6 +80,9 @@ func (v *KeycloakValidator) Validate(serverAddr, clientID, tokenString string) (
 	//if claims.Type != "ID" {
 	//	return false, &authz.Claims{Status: fmt.Sprintf("unexpected token type: %s, expected `ID` (id_token)", claims.Type)}, nil
 	//}
+	if claims.Audience == "" {
+		return false, &authz.Claims{Status: fmt.Sprintf("token has no audience")}, nil
+	}
 	if claims.Audience != clientID {
 		return false, &authz.Claims{Status: fmt.Sprintf("token is issued for another client: %s", claims.Audience)}, nil
 	}
