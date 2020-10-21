@@ -2,7 +2,10 @@
 
 package authz
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 // Authorization struct
 type Conf struct {
@@ -32,6 +35,7 @@ func (authz *Conf) Validate() error {
 	for _, rule := range authz.Rules {
 		// take Paths from deprecated Resources
 		if len(rule.Paths) == 0 && len(rule.Resources) != 0 {
+			fmt.Println("go-sec/authz: rules.resources config is deprecated. Use rules.paths instead.")
 			rule.Paths = rule.Resources
 		}
 
