@@ -14,12 +14,13 @@ type Conf struct {
 
 // Authorization rule
 type Rule struct {
-	Resources []string `json:"resources"`
-	Methods   []string `json:"methods"`
-	Users     []string `json:"users"`
-	Groups    []string `json:"groups"`
-	Roles     []string `json:"roles"`
-	Clients   []string `json:"clients"`
+	Resources           []string `json:"resources"`
+	Methods             []string `json:"methods"`
+	Users               []string `json:"users"`
+	Groups              []string `json:"groups"`
+	Roles               []string `json:"roles"`
+	Clients             []string `json:"clients"`
+	DenyPathSubstrtings []string `json:"denyPathSubstrings"`
 }
 
 // Validate authorization config

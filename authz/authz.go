@@ -27,6 +27,12 @@ func (authz *Conf) Authorized(resource, method string, claims *Claims) bool {
 	//fmt.Printf("%s -> %v -> %v\n", resource, resourceSplit, resourceTree)
 
 	for _, rule := range authz.Rules {
+		for _, substr := range rule.DenyPathSubstrtings {
+			if strings.Contains(resource, substr) {
+				return false
+			}
+		}
+
 		for _, res := range resourceTree {
 			// Return true if user or group matches a rule
 			if inSlice(res, rule.Resources) &&
