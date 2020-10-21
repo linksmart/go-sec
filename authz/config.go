@@ -14,13 +14,15 @@ type Conf struct {
 
 // Authorization rule
 type Rule struct {
-	Resources           []string `json:"resources"`
+	Paths               []string `json:"paths"`
 	Methods             []string `json:"methods"`
 	Users               []string `json:"users"`
 	Groups              []string `json:"groups"`
 	Roles               []string `json:"roles"`
 	Clients             []string `json:"clients"`
 	DenyPathSubstrtings []string `json:"denyPathSubstrings"`
+	// Deprecated. Use Paths instead.
+	Resources []string `json:"resources"`
 }
 
 // Validate authorization config
@@ -28,7 +30,12 @@ func (authz *Conf) Validate() error {
 
 	// Check each authorization rule
 	for _, rule := range authz.Rules {
-		if len(rule.Resources) == 0 {
+		// take Paths from deprecated Resources
+		if len(rule.Paths) == 0 && len(rule.Resources) != 0 {
+			rule.Paths = rule.Resources
+		}
+
+		if len(rule.Paths) == 0 {
 			return errors.New("no resources in an authorization rule")
 		}
 		if len(rule.Methods) == 0 {

@@ -27,6 +27,11 @@ func (authz *Conf) Authorized(resource, method string, claims *Claims) bool {
 	//fmt.Printf("%s -> %v -> %v\n", resource, resourceSplit, resourceTree)
 
 	for _, rule := range authz.Rules {
+		// take Paths from deprecated Resources
+		if len(rule.Paths) == 0 && len(rule.Resources) != 0 {
+			rule.Paths = rule.Resources
+		}
+
 		for _, substr := range rule.DenyPathSubstrtings {
 			if strings.Contains(resource, substr) {
 				return false
@@ -35,7 +40,7 @@ func (authz *Conf) Authorized(resource, method string, claims *Claims) bool {
 
 		for _, res := range resourceTree {
 			// Return true if user or group matches a rule
-			if inSlice(res, rule.Resources) &&
+			if inSlice(res, rule.Paths) &&
 				inSlice(method, rule.Methods) &&
 				(inSlice(claims.Username, rule.Users) ||
 					hasIntersection(claims.Groups, rule.Groups) ||
