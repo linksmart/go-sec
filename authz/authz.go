@@ -31,10 +31,11 @@ func (authz *Conf) Authorized(path, method string, claims *Claims) bool {
 		if len(rule.Paths) == 0 && len(rule.Resources) != 0 {
 			rule.Paths = rule.Resources
 		}
-
+		
+		var deniedPath bool
 		for _, substr := range rule.DenyPathSubstrtings {
 			if strings.Contains(path, substr) {
-				return false
+				deniedPath = true
 			}
 		}
 
@@ -46,7 +47,7 @@ func (authz *Conf) Authorized(path, method string, claims *Claims) bool {
 					hasIntersection(claims.Groups, rule.Groups) ||
 					hasIntersection(claims.Roles, rule.Roles) ||
 					inSlice(claims.ClientID, rule.Clients)) {
-				return true
+				return !deniedPath
 			}
 		}
 	}
