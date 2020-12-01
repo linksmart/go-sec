@@ -6,16 +6,15 @@ import (
 	"testing"
 )
 
-//type testCases []testCase
-
 type testCase struct {
 	path   string
 	method string
 	// claims
-	user     string
-	groups   []string
-	roles    []string
-	clientID string
+	user      string
+	groups    []string
+	roles     []string
+	clientID  string
+	anonymous bool
 }
 
 func (t testCase) Stringify() string {
@@ -23,6 +22,9 @@ func (t testCase) Stringify() string {
 }
 
 func (t testCase) Claims() *Claims {
+	if t.anonymous {
+		return nil
+	}
 	return &Claims{
 		Username: t.user,
 		Groups:   t.groups,
@@ -48,6 +50,11 @@ func TestAuthorizedExample(t *testing.T) {
 				"methods": ["PUT", "DELETE"],
 				"users": [],
 				"groups": ["admin"]
+			},
+			{
+				"paths": ["/public"],
+				"methods": ["GET"],
+				"groups": ["anonymous"]
 			}
 		]
 	}`
@@ -59,6 +66,7 @@ func TestAuthorizedExample(t *testing.T) {
 		{path: "/res/123", method: "GET", groups: []string{"admin"}},
 		{path: "/res", method: "PUT", groups: []string{"admin"}},
 		{path: "/res", method: "DELETE", groups: []string{"admin"}},
+		{path: "/public", method: "GET", anonymous: true},
 	}
 
 	denyCases := []testCase{
@@ -66,6 +74,7 @@ func TestAuthorizedExample(t *testing.T) {
 		{path: "/res2", method: "GET", user: "linksmart"},
 		{path: "/res", method: "POST", groups: []string{"admin"}},
 		{path: "/res2", method: "PUT", groups: []string{"admin"}},
+		{path: "/res", method: "GET", anonymous: true},
 	}
 
 	runAllowDenyTests(confJSON, allowCases, denyCases, t)
@@ -127,7 +136,7 @@ func runAllowDenyTests(authzConf string, allowCases, denyCases []testCase, t *te
 	var conf Conf
 	err := json.Unmarshal([]byte(authzConf), &conf)
 	if err != nil {
-		t.Error(err)
+		t.Fatalf("Error loading authz config json: %s", err)
 	}
 
 	t.Run("allow", func(t *testing.T) {
