@@ -41,14 +41,15 @@ func (authz *Conf) Authorized(path, method string, claims *Claims) bool {
 		}
 
 		for _, p := range pathTree {
-			// Return true if user or group matches a rule
+			// Return true if a rule matches
 			if inSlice(p, rule.Paths) &&
 				inSlice(method, rule.Methods) &&
 				(inSlice(claims.Username, rule.Users) ||
 					hasIntersection(claims.Groups, rule.Groups) ||
 					hasIntersection(claims.Roles, rule.Roles) ||
-					inSlice(claims.ClientID, rule.Clients)) {
-				return !deniedPath
+					inSlice(claims.ClientID, rule.Clients)) && 
+					!deniedPath {
+				return true
 			}
 		}
 	}
