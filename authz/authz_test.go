@@ -59,9 +59,6 @@ func TestAuthorizedExample(t *testing.T) {
 		{path: "/res/123", method: "GET", groups: []string{"admin"}},
 		{path: "/res", method: "PUT", groups: []string{"admin"}},
 		{path: "/res", method: "DELETE", groups: []string{"admin"}},
-		////
-		//{path: "/res2", method: "GET", user: "linksmart"},
-		//{path: "/res2/hi", method: "DELETE", groups: []string{"admin"}},
 	}
 
 	denyCases := []testCase{
@@ -69,9 +66,6 @@ func TestAuthorizedExample(t *testing.T) {
 		{path: "/res2", method: "GET", user: "linksmart"},
 		{path: "/res", method: "POST", groups: []string{"admin"}},
 		{path: "/res2", method: "PUT", groups: []string{"admin"}},
-		////
-		//{path: "/res", method: "DELETE", groups: []string{"admin"}},
-		//{path: "/res", method: "GET", user: "linksmart"},
 	}
 
 	var conf Conf
