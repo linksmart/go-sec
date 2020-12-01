@@ -36,6 +36,7 @@ func (authz *Conf) Authorized(path, method string, claims *Claims) bool {
 		for _, substr := range rule.DenyPathSubstrtings {
 			if strings.Contains(path, substr) {
 				deniedPath = true
+				break
 			}
 		}
 
