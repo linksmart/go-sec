@@ -31,21 +31,24 @@ func (authz *Conf) Authorized(path, method string, claims *Claims) bool {
 		if len(rule.Paths) == 0 && len(rule.Resources) != 0 {
 			rule.Paths = rule.Resources
 		}
-
+		
+		var deniedPath bool
 		for _, substr := range rule.DenyPathSubstrtings {
 			if strings.Contains(path, substr) {
-				return false
+				deniedPath = true
+				break
 			}
 		}
 
 		for _, p := range pathTree {
-			// Return true if user or group matches a rule
+			// Return true if a rule matches
 			if inSlice(p, rule.Paths) &&
 				inSlice(method, rule.Methods) &&
 				(inSlice(claims.Username, rule.Users) ||
 					hasIntersection(claims.Groups, rule.Groups) ||
 					hasIntersection(claims.Roles, rule.Roles) ||
-					inSlice(claims.ClientID, rule.Clients)) {
+					inSlice(claims.ClientID, rule.Clients)) && 
+					!deniedPath {
 				return true
 			}
 		}
