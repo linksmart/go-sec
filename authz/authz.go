@@ -10,8 +10,8 @@ import (
 // GroupAnonymous is the group name for unauthenticated users
 const GroupAnonymous = "anonymous"
 
-// Authorized checks whether a user/group is authorized to access a path using the specific method
-func (authz *Conf) Authorized(path, method string, claims *Claims) bool {
+// Authorized checks whether a request is authorized given the path, method, and claims
+func (rules Rules) Authorized(path, method string, claims *Claims) bool {
 	if claims == nil {
 		claims = &Claims{Groups: []string{GroupAnonymous}}
 	}
@@ -26,7 +26,7 @@ func (authz *Conf) Authorized(path, method string, claims *Claims) bool {
 	}
 	//fmt.Printf("%s -> %v -> %v\n", path, pathSplit, pathTree)
 
-	for _, rule := range authz.Rules {
+	for _, rule := range rules {
 		// take Paths from deprecated Resources
 		if len(rule.Paths) == 0 && len(rule.Resources) != 0 {
 			rule.Paths = rule.Resources

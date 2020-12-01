@@ -12,8 +12,10 @@ type Conf struct {
 	// Enabled toggles authorization
 	Enabled bool `json:"enabled"`
 	// Authorization rules
-	Rules []Rule `json:"rules"`
+	Rules Rules `json:"rules"`
 }
+
+type Rules []Rule
 
 // Authorization rule
 type Rule struct {
