@@ -84,7 +84,7 @@ func TestAuthorized(t *testing.T) {
 			"methods": ["GET"],
 			"users": ["john"],
 			"groups": [],
-			"roles": [],
+			"roles": ["customer"],
 			"clients": [],
 			"denyPathSubstrings": ["secret"]
 		},
@@ -92,18 +92,18 @@ func TestAuthorized(t *testing.T) {
 			"paths": ["/res"],
 			"methods": ["GET", "PUT"],
 			"users": [],
-			"groups": ["editor", "admin"],
-			"roles": [],
-			"clients": [],
+			"groups": ["editor"],
+			"roles": ["editor"],
+			"clients": ["editor-tool"],
 			"denyPathSubstrings": []
 		},
 		{
 			"paths": ["/res"],
-			"methods": ["DELETE"],
+			"methods": ["DELETE","GET", "PUT"],
 			"users": [],
 			"groups": ["admin"],
-			"roles": [],
-			"clients": [],
+			"roles": ["admin"],
+			"clients": ["admin-tool"],
 			"denyPathSubstrings": []
 		}
 	]`
@@ -115,12 +115,20 @@ func TestAuthorized(t *testing.T) {
 		{path: "/res", method: "PUT", groups: []string{"editor"}},
 		{path: "/res", method: "PUT", groups: []string{"admin"}},
 		{path: "/res", method: "DELETE", groups: []string{"admin"}},
+		{path: "/res/secret", method: "GET", clientID: "editor-tool"},
+		{path: "/res", method: "PUT", clientID: "editor-tool"},
+		{path: "/res", method: "PUT", clientID: "admin-tool"},
+		{path: "/res", method: "DELETE", groups: []string{"admin"}, user: "john"},
+		{path: "/res", method: "GET", groups: []string{"admin"}, user: "john"},
+		{path: "/res", method: "DELETE", groups: []string{"editor"},roles: []string{"admin"}},
+		{path: "/res/CaseSensitiveSecret", method: "GET", user: "john"},
 	}
 
 	denyCases := []testCase{
 		{path: "/res/secret", method: "GET", user: "john"},
 		{path: "/res/secret/2", method: "GET", user: "john"},
-		{path: "/res", method: "DELETE", groups: []string{"editor"}},
+		{path: "/res/substringsecret", method: "GET", user: "john"},
+		{path: "/res", method: "DELETE", groups: []string{"developer"}},
 	}
 
 	runAllowDenyTests(confRules, allowCases, denyCases, t)
