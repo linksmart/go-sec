@@ -1,6 +1,11 @@
 # Go-Sec: Security Packages for Go
 This repository includes security packages for LinkSmart Go services.
 
+## Import
+```
+go get github.com/linksmart/go-sec
+```
+
 It includes the following packages:
 ### Auth
 [![GoDoc](https://godoc.org/github.com/linksmart/go-sec/auth?status.svg)](https://godoc.org/github.com/linksmart/go-sec/auth)  
@@ -22,5 +27,3 @@ Documentation:
 
 ## Development
 The dependencies of this package are managed by [Go Modules](https://blog.golang.org/using-go-modules).
-
-Usage documentation are available [here](https://docs.linksmart.eu/display/LC/Authentication+Package).
