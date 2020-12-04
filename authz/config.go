@@ -27,7 +27,7 @@ type Rule struct {
 	Clients                []string `json:"clients"`
 	ExcludePathSubstrtings []string `json:"excludePathSubstrings"`
 	// Deprecated. Use Paths instead.
-	Resources           []string `json:"resources"`
+	Resources []string `json:"resources"`
 	// Deprecated. Use ExcludePathSubstrtings instead.
 	DenyPathSubstrtings []string `json:"denyPathSubstrings"`
 }
@@ -55,7 +55,6 @@ func (authz *Conf) Validate() error {
 
 		if len(rule.DenyPathSubstrtings) != 0 {
 			fmt.Println("go-sec/authz: rules.denyPathSubstrings config is deprecated. Use rules.excludePathSubstrings instead.")
-			rule.Paths = rule.Resources
 		}
 	}
 
