@@ -33,7 +33,7 @@ type Rule struct {
 }
 
 // Validate authorization config
-func (authz *Conf) Validate() error {
+func (authz Conf) Validate() error {
 
 	// Check each authorization rule
 	for _, rule := range authz.Rules {
@@ -44,7 +44,7 @@ func (authz *Conf) Validate() error {
 		}
 
 		if len(rule.Paths) == 0 {
-			return errors.New("no resources in an authorization rule")
+			return errors.New("no paths in an authorization rule")
 		}
 		if len(rule.Methods) == 0 {
 			return errors.New("no methods in an authorization rule")
