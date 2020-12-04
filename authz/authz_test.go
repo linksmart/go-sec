@@ -121,11 +121,13 @@ func TestAuthorized(t *testing.T) {
 		{path: "/res", method: "DELETE", groups: []string{"admin"}, user: "john"},
 		{path: "/res", method: "GET", groups: []string{"admin"}, user: "john"},
 		{path: "/res", method: "DELETE", groups: []string{"editor"},roles: []string{"admin"}},
+		{path: "/res/CaseSensitiveSecret", method: "GET", user: "john"},
 	}
 
 	denyCases := []testCase{
 		{path: "/res/secret", method: "GET", user: "john"},
 		{path: "/res/secret/2", method: "GET", user: "john"},
+		{path: "/res/substringsecret", method: "GET", user: "john"},
 		{path: "/res", method: "DELETE", groups: []string{"developer"}},
 	}
 
