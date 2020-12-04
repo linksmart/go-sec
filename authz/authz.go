@@ -31,11 +31,15 @@ func (rules Rules) Authorized(path, method string, claims *Claims) bool {
 		if len(rule.Paths) == 0 && len(rule.Resources) != 0 {
 			rule.Paths = rule.Resources
 		}
-		
-		var deniedPath bool
-		for _, substr := range rule.DenyPathSubstrtings {
+		// take exclusion substrings from deprecated DenyPathSubstrtings
+		if len(rule.ExcludePathSubstrtings) == 0 && len(rule.DenyPathSubstrtings) != 0 {
+			rule.ExcludePathSubstrtings = rule.DenyPathSubstrtings
+		}
+
+		var excludedPath bool
+		for _, substr := range rule.ExcludePathSubstrtings {
 			if strings.Contains(path, substr) {
-				deniedPath = true
+				excludedPath = true
 				break
 			}
 		}
@@ -47,8 +51,8 @@ func (rules Rules) Authorized(path, method string, claims *Claims) bool {
 				(inSlice(claims.Username, rule.Users) ||
 					hasIntersection(claims.Groups, rule.Groups) ||
 					hasIntersection(claims.Roles, rule.Roles) ||
-					inSlice(claims.ClientID, rule.Clients)) && 
-					!deniedPath {
+					inSlice(claims.ClientID, rule.Clients)) &&
+				!excludedPath {
 				return true
 			}
 		}

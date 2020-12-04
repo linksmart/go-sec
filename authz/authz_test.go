@@ -86,7 +86,7 @@ func TestAuthorized(t *testing.T) {
 			"groups": [],
 			"roles": ["customer"],
 			"clients": [],
-			"denyPathSubstrings": ["secret"]
+			"excludePathSubstrings": ["secret"]
 		},
 		{
 			"paths": ["/res"],
@@ -95,7 +95,7 @@ func TestAuthorized(t *testing.T) {
 			"groups": ["editor"],
 			"roles": ["editor"],
 			"clients": ["editor-tool"],
-			"denyPathSubstrings": []
+			"excludePathSubstrings": []
 		},
 		{
 			"paths": ["/res"],
@@ -104,7 +104,7 @@ func TestAuthorized(t *testing.T) {
 			"groups": ["admin"],
 			"roles": ["admin"],
 			"clients": ["admin-tool"],
-			"denyPathSubstrings": []
+			"excludePathSubstrings": []
 		}
 	]`
 
