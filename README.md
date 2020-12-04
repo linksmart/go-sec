@@ -1,4 +1,6 @@
 # Go-Sec: Security Packages for Go
+[![tests](https://github.com/linksmart/go-sec/workflows/tests/badge.svg)](https://github.com/linksmart/go-sec/actions?query=workflow%3Atests)
+
 This repository includes security packages for LinkSmart Go services.
 
 ## Import
